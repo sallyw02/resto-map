@@ -1,0 +1,71 @@
+:root {
+  --bg: #f7f7f5;
+  --panel: #ffffff;
+  --text: #1f2328;
+  --muted: #5f6670;
+  --border: #d9dcdf;
+  --map-width: 832px;
+  --map-height: 696px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+.app {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  padding: 20px;
+}
+
+.map {
+  position: relative;
+  flex: none;
+  width: var(--map-width);
+  height: var(--map-height);
+  border: 1px solid var(--border);
+}
+
+.map > * {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--map-width);
+  height: var(--map-height);
+}
+
+#overlay {
+  pointer-events: none;
+}
+
+.panel {
+  width: 280px;
+  padding: 16px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.panel h1 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.count {
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+
+.note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}

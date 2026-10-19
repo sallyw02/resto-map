@@ -69,3 +69,70 @@ body {
   color: var(--muted);
   font-size: 12px;
 }
+
+.controls {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.controls h2 {
+  margin: 0 0 4px;
+  font-size: 14px;
+}
+
+.slider {
+  display: block;
+  margin-top: 10px;
+}
+
+.slider span {
+  display: flex;
+  justify-content: space-between;
+}
+
+.slider output {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.slider input {
+  width: 100%;
+}
+
+.timing {
+  margin-top: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A and B circles on the SVG overlay. Only the handles take the pointer. */
+.zone {
+  fill: rgba(31, 35, 40, 0.05);
+  stroke: #1f2328;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 3;
+}
+
+.handle {
+  pointer-events: all;
+  cursor: grab;
+}
+
+.handle.dragging {
+  cursor: grabbing;
+}
+
+.handle circle {
+  fill: #ffffff;
+  stroke: #1f2328;
+  stroke-width: 2;
+}
+
+.handle text {
+  font-weight: 700;
+  font-size: 12px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  fill: #1f2328;
+  user-select: none;
+}

@@ -18,6 +18,21 @@
       <h1>Santa Clara County restaurants</h1>
       <p id="count" class="count">Loading data…</p>
       <p id="missing" class="note"></p>
+
+      <section class="controls">
+        <h2>Locations A and B</h2>
+        <p class="note">Drag the A and B markers on the map. Only restaurants inside both circles match.</p>
+        <label class="slider">
+          <span>Radius A <output id="radius-a-value"></output></span>
+          <input id="radius-a" type="range" min="0.25" max="15" step="0.25" value="3">
+        </label>
+        <label class="slider">
+          <span>Radius B <output id="radius-b-value"></output></span>
+          <input id="radius-b" type="range" min="0.25" max="15" step="0.25" value="3">
+        </label>
+      </section>
+
+      <p id="timing" class="note timing"></p>
     </aside>
   </main>
 

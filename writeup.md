@@ -48,13 +48,13 @@ I timed filter plus redraw with performance.now() in Chrome over 200 runs, with 
 
 ## Resources and AI assistance
 
-I used Claude Code, Anthropic's coding assistant (model Claude Opus 5.5) at several stages. It profiled the CSV to find the null counts, the placard distribution, and the shared locations. Claude helped work on the code in index.html, style.css, and script.js following those decisions. It also tested different steps I identified as checkpoints in a browser, measured the timings. I also manually checked the result after each step to make sure all conditions are met. 
+I used Claude Code, Anthropic's coding assistant (model Claude Opus 5.5), at several stages. It profiled the CSV to find the null counts, the placard distribution, and the shared locations. Claude helped work on the code in index.html, style.css, and script.js following those decisions. It also tested different steps I identified as checkpoints in a browser and measured the timings. I also manually checked the result after each step to make sure all conditions were met.
 
 The map frame and the d3.geoMercator projection setup come from the snippet in the assignment description. The page uses D3 v7 for CSV loading, the projection, dragging, and the quadtree. The base map image and the dataset are the ones provided for the course.
 
 ## Time spent
 
-3-4 hours. 1.5 hours for exploring the dataset and decision making, and the rest for implementig the code, testing, and debugging as needed. 
+4 hours. 1.5 hours for exploring the dataset and decision-making, and the rest for implementing the code, testing, and debugging as needed.
 
 ## What took the most time
 

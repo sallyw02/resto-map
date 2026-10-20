@@ -48,7 +48,7 @@ I timed filter plus redraw with performance.now() in Chrome over 200 runs, with 
 
 ## Resources and AI assistance
 
-I used Claude Code, Anthropic's coding assistant (model Claude Opus 5.5), at several stages. It profiled the CSV to find the null counts, the placard distribution, and the shared locations.  I then made key implementation decisions, and Claude helped work on the code in index.html, style.css, and script.js following my model. It also tested different steps I identified as checkpoints in a browser and measured the timings. I also manually checked the result after each step to make sure all conditions were met.
+Overall, I was responsible for the key decision making steps and core D3 programming sections. I used Claude Code, Anthropic's coding assistant (model Claude Opus 5.5), at several stages. It profiled the CSV to find the null counts, the placard distribution, and the shared locations.  It helped work on some of the code in index.html and style.css since I decided to host the visualisation on a github page. It also tested different steps I identified as checkpoints in a browser and measured the timings. I  manually checked the result after each step to make sure all conditions were met.
 
 The map frame and the d3.geoMercator projection setup come from the snippet in the assignment description. The page uses D3 v7 for CSV loading, the projection, dragging, and the quadtree. The base map image and the dataset are the ones provided for the course.
 

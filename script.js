@@ -38,6 +38,9 @@ const INACTIVE_COLOR = "rgba(120, 126, 134, 0.45)";
 const YELLOW_COLOR = "#e0a800";
 const RED_COLOR = "#d64545";
 const HANDLE_RADIUS = 11;
+const HOVER_RADIUS = 6;
+const TOOLTIP_OFFSET = 14;
+const TOOLTIP_MAX_ROWS = 5;
 
 // A starts at Stanford, B in downtown Mountain View.
 const circles = [
@@ -51,6 +54,8 @@ for (const c of circles) {
 const canvas = document.getElementById("dots");
 const ctx = canvas.getContext("2d");
 const overlay = d3.select("#overlay");
+const mapElement = document.getElementById("map");
+const tooltip = d3.select("#tooltip");
 const countLabel = document.getElementById("count");
 const timingLabel = document.getElementById("timing");
 const format = d3.format(",");
@@ -70,6 +75,12 @@ const filters = {
 
 let restaurants = [];
 let updateQueued = false;
+
+// Restaurants that share exact coordinates are grouped into one location, and
+// the quadtree indexes locations so hover can report everyone at a spot.
+let locations = [];
+let quadtree = null;
+let dragging = false;
 
 // The CSV stores missing values as the string "null".
 function parseNumber(value) {
@@ -193,6 +204,8 @@ const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
 const drag = d3.drag()
   .on("start", function () {
+    dragging = true;
+    hideTooltip();
     d3.select(this).classed("dragging", true).raise();
   })
   .on("drag", (event, c) => {
@@ -202,8 +215,125 @@ const drag = d3.drag()
     requestUpdate();
   })
   .on("end", function () {
+    dragging = false;
     d3.select(this).classed("dragging", false);
   });
+
+function buildLocations() {
+  const groups = d3.group(restaurants, r => `${r.lat},${r.lon}`);
+  locations = Array.from(groups.values(), group => ({
+    x: group[0].x,
+    y: group[0].y,
+    restaurants: group
+  }));
+  quadtree = d3.quadtree(locations, l => l.x, l => l.y);
+}
+
+function reviewText(count) {
+  return `${format(count)} ${count === 1 ? "review" : "reviews"}`;
+}
+
+// "N/A" is the data's way of saying there is no placard, so it is hidden
+// like a null field.
+function hasPlacard(r) {
+  return r.placard && r.placard !== "N/A";
+}
+
+// Built with text nodes rather than innerHTML so names from the CSV are never
+// parsed as markup.
+function renderSingle(r) {
+  tooltip.append("div").attr("class", "name").text(r.name);
+  tooltip.append("div").attr("class", "address").text(r.address);
+
+  const fields = [];
+  if (r.rating !== null) {
+    const reviews = r.reviews !== null ? ` (${reviewText(r.reviews)})` : "";
+    fields.push(["Rating", `${r.rating.toFixed(1)} ★${reviews}`]);
+  }
+  if (r.score !== null) fields.push(["Inspection score", r.score]);
+  if (hasPlacard(r)) fields.push(["Placard", r.placard]);
+
+  const list = tooltip.append("dl");
+  for (const [label, value] of fields) {
+    list.append("dt").text(label);
+    list.append("dd").text(value);
+  }
+
+  if (!r.active) {
+    tooltip.append("div").attr("class", "status").text("Filtered out by the current settings");
+  }
+}
+
+function renderGroup(group) {
+  const matching = group.filter(r => r.active).length;
+  tooltip.append("div").attr("class", "name")
+    .text(`${group.length} restaurants at this location`);
+  tooltip.append("div").attr("class", "address")
+    .text(`${matching} match the current filters`);
+
+  const sorted = group.slice().sort((a, b) =>
+    (b.active - a.active) || d3.ascending(a.name, b.name));
+  const rows = tooltip.append("ul")
+    .selectAll("li")
+    .data(sorted.slice(0, TOOLTIP_MAX_ROWS))
+    .join("li")
+    .classed("filtered-out", r => !r.active);
+  rows.append("span").text(r => r.name);
+  rows.append("span").text(r => {
+    const parts = [];
+    if (r.rating !== null) parts.push(`${r.rating.toFixed(1)} ★`);
+    if (hasPlacard(r)) parts.push(r.placard);
+    return parts.join(" · ");
+  });
+
+  if (group.length > TOOLTIP_MAX_ROWS) {
+    tooltip.append("div").attr("class", "more")
+      .text(`+${group.length - TOOLTIP_MAX_ROWS} more`);
+  }
+}
+
+// Place the tooltip beside the cursor, flipping to the other side near the
+// right or bottom edge so it stays inside the map.
+function positionTooltip(mx, my) {
+  const node = tooltip.node();
+  const width = node.offsetWidth;
+  const height = node.offsetHeight;
+  let left = mx + TOOLTIP_OFFSET;
+  let top = my + TOOLTIP_OFFSET;
+  if (left + width > MAP_WIDTH) left = mx - TOOLTIP_OFFSET - width;
+  if (top + height > MAP_HEIGHT) top = my - TOOLTIP_OFFSET - height;
+  tooltip.style("left", `${Math.max(0, left)}px`).style("top", `${Math.max(0, top)}px`);
+}
+
+function showTooltip(location, mx, my) {
+  tooltip.html("");
+  if (location.restaurants.length === 1) renderSingle(location.restaurants[0]);
+  else renderGroup(location.restaurants);
+  tooltip.property("hidden", false);
+  positionTooltip(mx, my);
+
+  overlay.select(".hover-ring")
+    .attr("cx", location.x)
+    .attr("cy", location.y)
+    .attr("r", HIGHLIGHT_RADIUS + 3)
+    .attr("visibility", "visible");
+}
+
+function hideTooltip() {
+  tooltip.property("hidden", true);
+  overlay.select(".hover-ring").attr("visibility", "hidden");
+}
+
+function handleHover(event) {
+  if (dragging || !quadtree || event.target.closest(".handle")) {
+    hideTooltip();
+    return;
+  }
+  const [mx, my] = d3.pointer(event, canvas);
+  const location = quadtree.find(mx, my, HOVER_RADIUS);
+  if (location) showTooltip(location, mx, my);
+  else hideTooltip();
+}
 
 function setupRadiusSlider(circle) {
   const key = circle.id.toLowerCase();
@@ -268,10 +398,14 @@ d3.csv("sccRestaurantsSynth2026.csv", parseRow).then(rows => {
     `${format(rows.length - restaurants.length)} of ${format(rows.length)} have no location and are not shown.`;
 
   setupCanvas();
+  buildLocations();
+  overlay.append("circle").attr("class", "hover-ring").attr("visibility", "hidden");
   renderCircles();
   overlay.selectAll(".handle").call(drag);
   circles.forEach(setupRadiusSlider);
   setupPlacardFilter();
   setupRatingFilter();
+  mapElement.addEventListener("mousemove", handleHover);
+  mapElement.addEventListener("mouseleave", hideTooltip);
   update();
 });

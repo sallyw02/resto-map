@@ -9,9 +9,10 @@
 <body>
   <main class="app">
     <div id="map" class="map">
-      <img class="basemap" src="sccRestaurantsMap2026.png" alt="Map of Santa Clara County">
-      <canvas id="dots"></canvas>
-      <svg id="overlay"></svg>
+      <img class="layer" src="sccRestaurantsMap2026.png" alt="Map of Santa Clara County">
+      <canvas id="dots" class="layer"></canvas>
+      <svg id="overlay" class="layer"></svg>
+      <div id="tooltip" class="tooltip" hidden></div>
     </div>
 
     <aside class="panel">

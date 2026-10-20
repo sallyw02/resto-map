@@ -34,7 +34,7 @@ body {
   border: 1px solid var(--border);
 }
 
-.map > * {
+.map > .layer {
   position: absolute;
   top: 0;
   left: 0;
@@ -44,6 +44,80 @@ body {
 
 #overlay {
   pointer-events: none;
+}
+
+.tooltip {
+  position: absolute;
+  max-width: 260px;
+  padding: 8px 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.tooltip[hidden] {
+  display: none;
+}
+
+.tooltip .name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tooltip .address,
+.tooltip .status,
+.tooltip .more {
+  color: var(--muted);
+}
+
+.tooltip dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  margin: 6px 0 0;
+}
+
+.tooltip dt {
+  color: var(--muted);
+}
+
+.tooltip dd {
+  margin: 0;
+}
+
+.tooltip ul {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tooltip li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.tooltip li span:last-child {
+  flex: none;
+  white-space: nowrap;
+}
+
+.tooltip li.filtered-out {
+  color: var(--muted);
+}
+
+.tooltip .status {
+  margin-top: 6px;
+}
+
+.hover-ring {
+  fill: none;
+  stroke: #1f2328;
+  stroke-width: 1.5;
 }
 
 .panel {

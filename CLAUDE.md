@@ -149,5 +149,5 @@ Keep notes here so the write-up is easy to finish.
 - Time spent so far:
 - Hardest parts:
 - Outside resources and how they were used: Claude Code (Claude Opus 5.5) profiled the CSV, ran a design Q&A to settle open decisions, and wrote the initial scaffold (index.html, style.css, script.js with projection, CSV parsing, and canvas dots). D3 v7 from jsDelivr.
-- Timing measurements: 2026-10-19, after A/B circle filtering (steps 3 and 4), local Chrome, 200 runs of filter plus redraw over 8,794 rows: median 0.70 ms, p95 0.80 ms, max 1.70 ms. The first update on page load took 12.6 ms (before JIT warm-up).
+- Timing measurements: 2026-10-19, after A/B circle filtering (steps 3 and 4), local Chrome, 200 runs of filter plus redraw over 8,794 rows: median 0.70 ms, p95 0.80 ms, max 1.70 ms. The first update on page load took 12.6 ms (before JIT warm-up). After adding placard and rating filters (step 5), 200 runs: median 0.80 ms, p95 1.40 ms, max 2.10 ms.
 - Rows dropped for missing location: 915 of 9,709 (8,794 mapped)

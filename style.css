@@ -100,6 +100,51 @@ body {
   width: 100%;
 }
 
+.checks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+  margin-top: 8px;
+}
+
+.checks label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.checks .tally {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.legend {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.swatch.match { background: #2b6cb0; }
+.swatch.yellow { background: #e0a800; }
+.swatch.red { background: #d64545; }
+.swatch.filtered { background: rgba(120, 126, 134, 0.45); }
+
 .timing {
   margin-top: 16px;
   font-variant-numeric: tabular-nums;

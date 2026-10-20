@@ -32,6 +32,30 @@
         </label>
       </section>
 
+      <section class="controls">
+        <h2>Inspection placard</h2>
+        <p class="note">Latest county inspection result. Other covers Pass *, Closure *, and N/A.</p>
+        <div id="placards" class="checks"></div>
+      </section>
+
+      <section class="controls">
+        <h2>Rating</h2>
+        <label class="slider">
+          <span>Minimum rating <output id="min-rating-value"></output></span>
+          <input id="min-rating" type="range" min="1" max="5" step="0.1" value="1">
+        </label>
+      </section>
+
+      <section class="controls">
+        <h2>Legend</h2>
+        <ul class="legend">
+          <li><span class="swatch match"></span>Matches all filters</li>
+          <li><span class="swatch yellow"></span>Matches, yellow placard</li>
+          <li><span class="swatch red"></span>Matches, red placard</li>
+          <li><span class="swatch filtered"></span>Filtered out</li>
+        </ul>
+      </section>
+
       <p id="timing" class="note timing"></p>
     </aside>
   </main>

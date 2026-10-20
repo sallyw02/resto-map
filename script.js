@@ -32,8 +32,11 @@ const PIXELS_PER_MILE = (() => {
 })();
 
 const DOT_RADIUS = 2;
+const HIGHLIGHT_RADIUS = 3;
 const ACTIVE_COLOR = "#2b6cb0";
 const INACTIVE_COLOR = "rgba(120, 126, 134, 0.45)";
+const YELLOW_COLOR = "#e0a800";
+const RED_COLOR = "#d64545";
 const HANDLE_RADIUS = 11;
 
 // A starts at Stanford, B in downtown Mountain View.
@@ -51,6 +54,19 @@ const overlay = d3.select("#overlay");
 const countLabel = document.getElementById("count");
 const timingLabel = document.getElementById("timing");
 const format = d3.format(",");
+
+// Placard values are almost all Green. The rare non-color labels
+// (Pass *, Closure *, N/A) share one Other group.
+const PLACARD_GROUPS = ["Green", "Yellow", "Red", "Other"];
+
+function placardGroup(value) {
+  return PLACARD_GROUPS.includes(value) ? value : "Other";
+}
+
+const filters = {
+  placards: new Set(PLACARD_GROUPS),
+  minRating: 1
+};
 
 let restaurants = [];
 let updateQueued = false;
@@ -73,6 +89,7 @@ function parseRow(d) {
     lon: parseNumber(d["Longitude"]),
     rating: parseNumber(d["Rating"]),
     reviews: parseNumber(d["Number of reviews"]),
+    placardGroup: placardGroup(d["Latest placard color"]),
     active: true
   };
 }
@@ -85,41 +102,51 @@ function setupCanvas() {
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 }
 
-// Mark each restaurant active if it lies inside both circles. Compares squared
-// distances so there is no square root per row.
+// Mark each restaurant active if it lies inside both circles and passes the
+// placard and rating filters. Compares squared distances so there is no
+// square root per row. Rating is never null in this data, but a null rating
+// would fail any minimum because null >= n is false for n > 0.
 function applyFilters() {
   const [a, b] = circles;
   const ra = a.radiusMiles * PIXELS_PER_MILE;
   const rb = b.radiusMiles * PIXELS_PER_MILE;
   const ra2 = ra * ra;
   const rb2 = rb * rb;
+  const { placards, minRating } = filters;
   let activeCount = 0;
 
   for (const r of restaurants) {
     const dxa = r.x - a.x, dya = r.y - a.y;
     const dxb = r.x - b.x, dyb = r.y - b.y;
-    r.active = dxa * dxa + dya * dya <= ra2 && dxb * dxb + dyb * dyb <= rb2;
+    r.active = dxa * dxa + dya * dya <= ra2
+      && dxb * dxb + dyb * dyb <= rb2
+      && placards.has(r.placardGroup)
+      && r.rating >= minRating;
     if (r.active) activeCount++;
   }
   return activeCount;
 }
 
-function fillDots(color, wantActive) {
+function fillDots(color, radius, include) {
   ctx.fillStyle = color;
   ctx.beginPath();
   for (const r of restaurants) {
-    if (r.active !== wantActive) continue;
-    ctx.moveTo(r.x + DOT_RADIUS, r.y);
-    ctx.arc(r.x, r.y, DOT_RADIUS, 0, 2 * Math.PI);
+    if (!include(r)) continue;
+    ctx.moveTo(r.x + radius, r.y);
+    ctx.arc(r.x, r.y, radius, 0, 2 * Math.PI);
   }
   ctx.fill();
 }
 
-// Gray inactive dots first, then active dots on top so matches are never hidden.
+// Gray inactive dots first, then active dots, then the rare active yellow and
+// red placards on top so they are never hidden under the others.
 function drawDots() {
   ctx.clearRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
-  fillDots(INACTIVE_COLOR, false);
-  fillDots(ACTIVE_COLOR, true);
+  fillDots(INACTIVE_COLOR, DOT_RADIUS, r => !r.active);
+  fillDots(ACTIVE_COLOR, DOT_RADIUS,
+    r => r.active && r.placardGroup !== "Yellow" && r.placardGroup !== "Red");
+  fillDots(YELLOW_COLOR, HIGHLIGHT_RADIUS, r => r.active && r.placardGroup === "Yellow");
+  fillDots(RED_COLOR, HIGHLIGHT_RADIUS, r => r.active && r.placardGroup === "Red");
 }
 
 function update() {
@@ -194,6 +221,43 @@ function setupRadiusSlider(circle) {
   });
 }
 
+function setupPlacardFilter() {
+  const totals = d3.rollup(restaurants, rows => rows.length, r => r.placardGroup);
+  const labels = d3.select("#placards")
+    .selectAll("label")
+    .data(PLACARD_GROUPS)
+    .join("label");
+
+  labels.append("input")
+    .attr("type", "checkbox")
+    .property("checked", group => filters.placards.has(group))
+    .on("change", function (event, group) {
+      if (this.checked) filters.placards.add(group);
+      else filters.placards.delete(group);
+      requestUpdate();
+    });
+  labels.append("span").text(group => group);
+  labels.append("span")
+    .attr("class", "tally")
+    .text(group => format(totals.get(group) || 0));
+}
+
+function setupRatingFilter() {
+  const input = document.getElementById("min-rating");
+  const output = document.getElementById("min-rating-value");
+  const show = () => {
+    output.textContent = filters.minRating <= 1 ? "Any" : `${filters.minRating.toFixed(1)}+`;
+  };
+
+  input.value = filters.minRating;
+  show();
+  input.addEventListener("input", () => {
+    filters.minRating = +input.value;
+    show();
+    requestUpdate();
+  });
+}
+
 d3.csv("sccRestaurantsSynth2026.csv", parseRow).then(rows => {
   restaurants = rows.filter(r => r.lat !== null && r.lon !== null);
   for (const r of restaurants) {
@@ -207,5 +271,7 @@ d3.csv("sccRestaurantsSynth2026.csv", parseRow).then(rows => {
   renderCircles();
   overlay.selectAll(".handle").call(drag);
   circles.forEach(setupRadiusSlider);
+  setupPlacardFilter();
+  setupRatingFilter();
   update();
 });

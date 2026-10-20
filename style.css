@@ -230,7 +230,8 @@ body {
   border-radius: 50%;
 }
 
-.swatch.match { background: #2b6cb0; }
+.swatch.green { background: #6cc489; }
+.swatch.other { border: 1.5px dotted #a78bfa; background: rgba(167, 139, 250, 0.35); }
 .swatch.yellow { background: #e0a800; }
 .swatch.red { background: #d64545; }
 .swatch.filtered { background: rgba(120, 126, 134, 0.45); }

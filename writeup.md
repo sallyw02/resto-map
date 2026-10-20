@@ -20,11 +20,11 @@ Then open http://localhost:8000. The CSV and the base map image are both include
 
 ### Dot colors
 
-Matching restaurants are drawn in blue. Only matches whose latest placard is Yellow or Red get their own color, and those dots are drawn slightly larger on top of the rest. Restaurants that fail any filter are gray.
+Matching restaurants are colored by their latest placard. Green placards are a light pastel green, Yellow and Red placards are yellow and red, and the Other group is a light purple dotted ring. Yellow and Red dots are drawn slightly larger and on top of everything else. Restaurants that fail any filter are gray.
 
-I chose this because the placard data is very skewed. 9,614 of the 9,709 restaurants have a Green placard, while only 21 are Yellow and 2 are Red. Coloring every match by its placard would have turned almost the whole matching set green, so green would mean little more than "matches" and the few problem restaurants would be easy to miss. A Yellow placard is a conditional pass with major violations, and a Red placard means the county closed the restaurant. Those are the cases a diner would want to notice, so they are the ones that stand out.
+Coloring by placard lets the dot match the data directly, so a green dot means a green placard. The placard data is very skewed, though. 9,614 of the 9,709 restaurants have a Green placard, while only 21 are Yellow and 2 are Red. I used a soft pastel for green so that the thousands of green dots stay in the background and the few Yellow and Red restaurants stand out. A Yellow placard is a conditional pass with major violations, and a Red placard means the county closed the restaurant. Those are the cases a diner would want to notice.
 
-Green and Other matches share the blue, and the legend says so. Other covers Pass *, Closure *, and N/A. I did not use green as the match color, because then the Other group would also look green and suggest it had passed inspection when it may not have.
+Other covers Pass *, Closure *, and N/A. The dataset does not explain these labels, and their scores do not line up with them. A Pass * restaurant can score as low as 6, and a Closure * restaurant can score 100. Rather than present them as passing or as closed, I gave them their own light purple, and drew them as dotted rings instead of solid dots so they read as matches whose inspection status is unclear.
 
 ### Filters
 
@@ -48,7 +48,7 @@ I timed filter plus redraw with performance.now() in Chrome over 200 runs, with 
 
 ## Resources and AI assistance
 
-I used Claude Code, Anthropic's coding assistant (model Claude Opus 5.5), at several stages. It profiled the CSV to find the null counts, the placard distribution, and the shared locations. Claude helped work on the code in index.html, style.css, and script.js following those decisions. It also tested different steps I identified as checkpoints in a browser and measured the timings. I also manually checked the result after each step to make sure all conditions were met.
+I used Claude Code, Anthropic's coding assistant (model Claude Opus 5.5), at several stages. It profiled the CSV to find the null counts, the placard distribution, and the shared locations.  I then made key implementation decisions, and Claude helped work on the code in index.html, style.css, and script.js following my model. It also tested different steps I identified as checkpoints in a browser and measured the timings. I also manually checked the result after each step to make sure all conditions were met.
 
 The map frame and the d3.geoMercator projection setup come from the snippet in the assignment description. The page uses D3 v7 for CSV loading, the projection, dragging, and the quadtree. The base map image and the dataset are the ones provided for the course.
 

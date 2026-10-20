@@ -33,7 +33,10 @@ const PIXELS_PER_MILE = (() => {
 
 const DOT_RADIUS = 2;
 const HIGHLIGHT_RADIUS = 3;
-const ACTIVE_COLOR = "#2b6cb0";
+const OTHER_RING_RADIUS = 3.5;
+const GREEN_COLOR = "#6cc489";
+const OTHER_COLOR = "#a78bfa";
+const OTHER_FILL = "rgba(167, 139, 250, 0.35)";
 const INACTIVE_COLOR = "rgba(120, 126, 134, 0.45)";
 const YELLOW_COLOR = "#e0a800";
 const RED_COLOR = "#d64545";
@@ -156,13 +159,31 @@ function fillDots(color, radius, include) {
   ctx.fill();
 }
 
-// Gray inactive dots first, then active dots, then the rare active yellow and
-// red placards on top so they are never hidden under the others.
+// Other placards (Pass *, Closure *, N/A) have no documented meaning, so they
+// get a faint fill with a dotted outline instead of a solid dot.
+function drawDottedRings(stroke, fill, radius, include) {
+  ctx.fillStyle = fill;
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([1.5, 1.2]);
+  ctx.beginPath();
+  for (const r of restaurants) {
+    if (!include(r)) continue;
+    ctx.moveTo(r.x + radius, r.y);
+    ctx.arc(r.x, r.y, radius, 0, 2 * Math.PI);
+  }
+  ctx.fill();
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+// Gray inactive dots first, then active dots by placard. The pastel green is
+// light so the rare yellow and red placards, drawn larger and last, stand out.
 function drawDots() {
   ctx.clearRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
   fillDots(INACTIVE_COLOR, DOT_RADIUS, r => !r.active);
-  fillDots(ACTIVE_COLOR, DOT_RADIUS,
-    r => r.active && r.placardGroup !== "Yellow" && r.placardGroup !== "Red");
+  fillDots(GREEN_COLOR, DOT_RADIUS, r => r.active && r.placardGroup === "Green");
+  drawDottedRings(OTHER_COLOR, OTHER_FILL, OTHER_RING_RADIUS, r => r.active && r.placardGroup === "Other");
   fillDots(YELLOW_COLOR, HIGHLIGHT_RADIUS, r => r.active && r.placardGroup === "Yellow");
   fillDots(RED_COLOR, HIGHLIGHT_RADIUS, r => r.active && r.placardGroup === "Red");
 }

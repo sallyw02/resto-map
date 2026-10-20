@@ -42,14 +42,21 @@ const HOVER_RADIUS = 6;
 const TOOLTIP_OFFSET = 14;
 const TOOLTIP_MAX_ROWS = 5;
 
-// A starts at Stanford, B in downtown Mountain View.
+// A starts at Stanford, B in downtown Mountain View. Dragging moves x and y;
+// lon and lat stay as the defaults that Reset returns to.
+const DEFAULT_RADIUS_MILES = 3;
+const DEFAULT_MIN_RATING = 1;
 const circles = [
-  { id: "A", lon: -122.17006, lat: 37.42766, radiusMiles: 3 },
-  { id: "B", lon: -122.080, lat: 37.394, radiusMiles: 3 }
+  { id: "A", lon: -122.17006, lat: 37.42766, radiusMiles: DEFAULT_RADIUS_MILES },
+  { id: "B", lon: -122.080, lat: 37.394, radiusMiles: DEFAULT_RADIUS_MILES }
 ];
-for (const c of circles) {
-  [c.x, c.y] = projection([c.lon, c.lat]);
+
+function placeCirclesAtDefaults() {
+  for (const c of circles) {
+    [c.x, c.y] = projection([c.lon, c.lat]);
+  }
 }
+placeCirclesAtDefaults();
 
 const canvas = document.getElementById("dots");
 const ctx = canvas.getContext("2d");
@@ -70,7 +77,7 @@ function placardGroup(value) {
 
 const filters = {
   placards: new Set(PLACARD_GROUPS),
-  minRating: 1
+  minRating: DEFAULT_MIN_RATING
 };
 
 let restaurants = [];
@@ -388,6 +395,27 @@ function setupRatingFilter() {
   });
 }
 
+// Reset moves the circles back, then sets each control and fires its own
+// event, so the existing handlers update filter state and labels.
+function setControl(input, value, eventType) {
+  if (input.type === "checkbox") input.checked = value;
+  else input.value = value;
+  input.dispatchEvent(new Event(eventType));
+}
+
+function resetAll() {
+  placeCirclesAtDefaults();
+  for (const c of circles) {
+    const input = document.getElementById(`radius-${c.id.toLowerCase()}`);
+    setControl(input, DEFAULT_RADIUS_MILES, "input");
+  }
+  document.querySelectorAll("#placards input").forEach(box => setControl(box, true, "change"));
+  setControl(document.getElementById("min-rating"), DEFAULT_MIN_RATING, "input");
+  hideTooltip();
+  renderCircles();
+  requestUpdate();
+}
+
 d3.csv("sccRestaurantsSynth2026.csv", parseRow).then(rows => {
   restaurants = rows.filter(r => r.lat !== null && r.lon !== null);
   for (const r of restaurants) {
@@ -407,5 +435,6 @@ d3.csv("sccRestaurantsSynth2026.csv", parseRow).then(rows => {
   setupRatingFilter();
   mapElement.addEventListener("mousemove", handleHover);
   mapElement.addEventListener("mouseleave", hideTooltip);
+  document.getElementById("reset").addEventListener("click", resetAll);
   update();
 });

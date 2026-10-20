@@ -144,6 +144,21 @@ body {
   font-size: 12px;
 }
 
+.reset {
+  margin-top: 10px;
+  padding: 4px 12px;
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.reset:hover {
+  background: var(--bg);
+}
+
 .controls {
   margin-top: 16px;
   padding-top: 12px;
